@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Math Asteroid Blaster</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: 'Courier New', monospace; overflow: hidden; user-select: none; }
+  canvas { display: block; }
+  #ui { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
+  #hud { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 16px; background: rgba(0,0,0,0.5); }
+  #score-box { font-size: 14px; line-height: 1.6; }
+  #lives-box { font-size: 20px; letter-spacing: 4px; }
+  #question-box {
+    margin: 0 auto; max-width: 700px;
+    background: rgba(10,20,60,0.92);
+    border: 2px solid #4af; border-radius: 10px;
+    padding: 10px 18px; text-align: center; pointer-events: none;
+  }
+  #standard-label { font-size: 11px; color: #7bf; margin-bottom: 2px; letter-spacing: 1px; }
+  #question-text { font-size: 20px; font-weight: bold; color: #fff; line-height: 1.4; white-space: pre-line; }
+  #timer-bar-wrap { height: 6px; background: #222; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  #timer-bar { height: 6px; background: #4af; border-radius: 3px; transition: width 0.1s linear, background 0.3s; }
+  #diff-badge {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    margin-top: 80px; font-size: 11px; pointer-events: none;
+  }
+  #overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.88);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px;
+  }
+  #overlay h1 { font-size: 34px; color: #4af; margin-bottom: 8px; text-shadow: 0 0 20px #4af; }
+  #overlay p { font-size: 14px; color: #adf; margin-bottom: 5px; max-width: 520px; line-height: 1.6; }
+  .diff-grid { display: flex; gap: 14px; margin: 18px 0 6px; flex-wrap: wrap; justify-content: center; }
+  .diff-card {
+    border: 2px solid #4af; border-radius: 12px; padding: 14px 18px;
+    cursor: pointer; pointer-events: all; width: 155px;
+    transition: background 0.2s, transform 0.15s;
+    background: rgba(10,30,70,0.7);
+  }
+  .diff-card:hover { background: rgba(30,80,160,0.7); transform: scale(1.04); }
+  .diff-card.selected { background: rgba(0,100,200,0.55); border-color: #7df; }
+  .diff-card h3 { font-size: 15px; color: #fff; margin-bottom: 4px; }
+  .diff-card p { font-size: 11px; color: #9ce; margin: 0; line-height: 1.5; }
+  .diff-card .badge { font-size: 10px; margin-top: 6px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
+  .easy-b { background: #1a4; color: #fff; }
+  .med-b  { background: #960; color: #fff; }
+  .hard-b { background: #a22; color: #fff; }
+  #start-btn {
+    margin-top: 14px; padding: 12px 40px;
+    background: #4af; color: #000; font-size: 18px; font-weight: bold;
+    border: none; border-radius: 8px; cursor: pointer; font-family: inherit;
+    pointer-events: all; opacity: 0.4; transition: opacity 0.2s;
+  }
+  #start-btn.ready { opacity: 1; }
+  #start-btn.ready:hover { background: #7df; }
+  .standards { font-size: 11px; color: #7bf; margin: 8px 0; line-height: 1.8; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="hud">
+    <div id="score-box">
+      <div>SCORE: <span id="score">0</span></div>
+      <div>WAVE: <span id="wave">1</span></div>
+      <div style="font-size:11px;color:#7bf;">HIGH: <span id="hi">0</span></div>
+    </div>
+    <div id="question-box">
+      <div id="standard-label">—</div>
+      <div id="question-text">—</div>
+      <div id="timer-bar-wrap"><div id="timer-bar" style="width:100%"></div></div>
+    </div>
+    <div id="lives-box"><span id="lives">❤️❤️❤️</span></div>
+  </div>
+</div>
+
+<div id="overlay">
+  <h1>🚀 Math Asteroid Blaster</h1>
+  <p><b>Bridges 3rd Grade Edition</b> — Read each question, then shoot the asteroid with the correct answer!</p>
+  <p>Move: <b>← → Arrow Keys</b> &nbsp;|&nbsp; Shoot: <b>Spacebar</b> &nbsp;|&nbsp; Mobile: drag &amp; tap</p>
+  <p style="margin-top:6px;">Choose your difficulty:</p>
+  <div class="diff-grid">
+    <div class="diff-card" id="card-easy" onclick="selectDiff('easy')">
+      <h3>🌱 Explorer</h3>
+      <p>No timer — take all the time you need. Focus on understanding.</p>
+      <span class="badge easy-b">Untimed</span>
+    </div>
+    <div class="diff-card" id="card-medium" onclick="selectDiff('medium')">
+      <h3>⭐ Challenger</h3>
+      <p>Generous timers. Facts are quick; word problems get extra time.</p>
+      <span class="badge med-b">Relaxed Timer</span>
+    </div>
+    <div class="diff-card" id="card-hard" onclick="selectDiff('hard')">
+      <h3>🚀 Ace Pilot</h3>
+      <p>Tighter timers and faster asteroids. For confident math students!</p>
+      <span class="badge hard-b">Timed</span>
+    </div>
+  </div>
+  <div class="standards">
+    Standards: 3.OA.A.1 · 3.OA.A.2 · 3.OA.C.7 · 3.OA.D.8 · 3.NBT.1 · 3.NBT.2 · 3.NF.A.1 · 3.NF.A.3 · 3.MD.C.7 · 3.MD.D.8
+  </div>
+  <button id="start-btn" onclick="startGame()">START GAME</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+// ── Difficulty config ─────────────────────────────────────────────────────
+// timers: fact / medium (fractions, short) / multi (word problems) / nbt (3-digit add/sub)
+const DIFF = {
+  easy:   { label:'🌱 Explorer',   timers:{ fact:0, medium:0, multi:0, nbt:0 },   astroidSpeedMult:0.55, untimed:true  },
+  medium: { label:'⭐ Challenger',  timers:{ fact:18, medium:30, multi:45, nbt:40 }, astroidSpeedMult:0.75, untimed:false },
+  hard:   { label:'🚀 Ace Pilot',   timers:{ fact:12, medium:22, multi:36, nbt:32 }, astroidSpeedMult:1.0,  untimed:false },
+};
+let difficulty = null;
+
+function selectDiff(d) {
+  difficulty = d;
+  ['easy','medium','hard'].forEach(x => document.getElementById('card-'+x).classList.remove('selected'));
+  document.getElementById('card-'+d).classList.add('selected');
+  const btn = document.getElementById('start-btn');
+  btn.classList.add('ready');
+}
+
+// ── Question Bank ─────────────────────────────────────────────────────────
+// type: 'fact' | 'medium' | 'multi' | 'nbt'
+const QUESTION_BANK = [
+  // 3.OA.C.7 — Multiplication facts
+  {q:"What is 3 × 4?",  a:12, wrong:[9,15,8],   std:"3.OA.C.7", type:"fact"},
+  {q:"What is 6 × 7?",  a:42, wrong:[36,48,35],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 8 × 9?",  a:72, wrong:[63,81,56],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 7 × 7?",  a:49, wrong:[42,56,48],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 4 × 6?",  a:24, wrong:[18,28,20],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 5 × 9?",  a:45, wrong:[40,54,36],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 3 × 8?",  a:24, wrong:[18,27,21],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 9 × 6?",  a:54, wrong:[48,63,45],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 4 × 9?",  a:36, wrong:[27,45,32],  std:"3.OA.C.7", type:"fact"},
+  {q:"What is 7 × 8?",  a:56, wrong:[48,63,54],  std:"3.OA.C.7", type:"fact"},
+  // 3.OA.A.2 — Division facts
+  {q:"What is 36 ÷ 6?", a:6,  wrong:[4,7,9],     std:"3.OA.A.2", type:"fact"},
+  {q:"What is 45 ÷ 9?", a:5,  wrong:[4,6,7],     std:"3.OA.A.2", type:"fact"},
+  {q:"What is 56 ÷ 7?", a:8,  wrong:[6,7,9],     std:"3.OA.A.2", type:"fact"},
+  {q:"What is 72 ÷ 8?", a:9,  wrong:[6,7,8],     std:"3.OA.A.2", type:"fact"},
+  {q:"What is 24 ÷ 4?", a:6,  wrong:[4,5,8],     std:"3.OA.A.2", type:"fact"},
+  {q:"What is 63 ÷ 9?", a:7,  wrong:[6,8,9],     std:"3.OA.A.2", type:"fact"},
+  // 3.NBT.2 — 3-digit Addition (own type: 'nbt' for longer timer)
+  {q:"What is 346 + 253?", a:599, wrong:[589,609,498], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 427 + 385?", a:812, wrong:[802,822,712], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 638 + 174?", a:812, wrong:[802,822,712], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 245 + 368?", a:613, wrong:[603,623,513], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 509 + 246?", a:755, wrong:[745,765,655], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 183 + 479?", a:662, wrong:[652,672,562], std:"3.NBT.2", type:"nbt"},
+  // 3.NBT.2 — 3-digit Subtraction (own type: 'nbt')
+  {q:"What is 512 − 267?", a:245, wrong:[255,235,345], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 703 − 456?", a:247, wrong:[257,237,347], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 831 − 374?", a:457, wrong:[467,447,557], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 600 − 348?", a:252, wrong:[242,262,352], std:"3.NBT.2", type:"nbt"},
+  {q:"What is 724 − 189?", a:535, wrong:[545,525,435], std:"3.NBT.2", type:"nbt"},
+  // 3.NBT.1 — Rounding
+  {q:"Round 473 to the nearest hundred.", a:500, wrong:[400,470,480], std:"3.NBT.1", type:"fact"},
+  {q:"Round 348 to the nearest ten.",     a:350, wrong:[300,340,400], std:"3.NBT.1", type:"fact"},
+  {q:"Round 652 to the nearest hundred.", a:700, wrong:[600,650,660], std:"3.NBT.1", type:"fact"},
+  {q:"Round 785 to the nearest ten.",     a:790, wrong:[700,800,780], std:"3.NBT.1", type:"fact"},
+  {q:"Round 215 to the nearest hundred.", a:200, wrong:[220,300,210], std:"3.NBT.1", type:"fact"},
+  // 3.NF.A.1 — Fractions
+  {q:"A pizza is cut into 4 equal slices.\nYou eat 1 slice. What fraction did you eat?",    a:"1/4", wrong:["1/2","2/4","3/4"], std:"3.NF.A.1", type:"medium"},
+  {q:"A ribbon is cut into 6 equal parts.\n3 parts are red. What fraction is red?",          a:"3/6", wrong:["1/3","2/6","1/2"], std:"3.NF.A.1", type:"medium"},
+  {q:"Which fraction equals one half?",                                                       a:"2/4", wrong:["2/3","3/4","1/3"], std:"3.NF.A.3", type:"medium"},
+  {q:"Which fraction is greater: 1/2 or 1/4?\n(Shoot the bigger fraction)",                  a:"1/2", wrong:["1/4","1/3","1/6"], std:"3.NF.A.3", type:"medium"},
+  {q:"3 out of 8 equal parts are shaded.\nWhat fraction is shaded?",                          a:"3/8", wrong:["3/6","5/8","1/4"], std:"3.NF.A.1", type:"medium"},
+  // 3.MD.C.7 — Area
+  {q:"A rectangle is 4 units long and 3 units wide.\nWhat is its area?",     a:12, wrong:[14,10,7],   std:"3.MD.C.7", type:"multi"},
+  {q:"A rectangle is 6 units long and 5 units wide.\nWhat is its area?",     a:30, wrong:[22,28,36],  std:"3.MD.C.7", type:"multi"},
+  {q:"A square has sides of 7 units.\nWhat is its area?",                    a:49, wrong:[28,42,56],  std:"3.MD.C.7", type:"multi"},
+  {q:"A room is 8 feet long and 9 feet wide.\nWhat is its area in sq. ft?",  a:72, wrong:[68,80,64],  std:"3.MD.C.7", type:"multi"},
+  // 3.MD.D.8 — Perimeter
+  {q:"A rectangle is 5 cm long and 3 cm wide.\nWhat is its perimeter?",       a:16, wrong:[15,18,8],   std:"3.MD.D.8", type:"multi"},
+  {q:"A square has sides of 6 inches.\nWhat is its perimeter?",               a:24, wrong:[36,12,18],  std:"3.MD.D.8", type:"multi"},
+  {q:"A rectangle has sides of 4 m and 7 m.\nWhat is its perimeter?",         a:22, wrong:[28,18,11],  std:"3.MD.D.8", type:"multi"},
+  // 3.OA.D.8 — Two-step word problems
+  {q:"Sam has 24 stickers. He gives 8 to a friend,\nthen buys 5 more. How many does Sam have?",         a:21, wrong:[17,27,13], std:"3.OA.D.8", type:"multi"},
+  {q:"A bag holds 6 apples. There are 4 bags.\n2 apples are eaten. How many apples are left?",           a:22, wrong:[18,24,26], std:"3.OA.D.8", type:"multi"},
+  {q:"Lily reads 9 pages a day for 5 days.\nShe already read 7 pages. How many total pages?",            a:52, wrong:[45,57,42], std:"3.OA.D.8", type:"multi"},
+  {q:"There are 3 rows of 7 chairs.\n4 chairs are removed. How many chairs are left?",                   a:17, wrong:[21,13,25], std:"3.OA.D.8", type:"multi"},
+  {q:"A store has 56 boxes. 8 boxes fit on each shelf.\nHow many shelves are needed?",                   a:7,  wrong:[6,8,9],    std:"3.OA.D.8", type:"multi"},
+];
+
+// ── Game State ────────────────────────────────────────────────────────────
+let state = 'menu';
+let score = 0, hiScore = 0, lives = 3, waveNum = 1;
+let ship, bullets = [], asteroids = [], stars = [];
+let currentQ = null, qTimer = 0, qMaxTime = 0;
+let keys = {};
+let lastTime = 0;
+let usedQIndices = [];
+let waveMsg = '', waveMsgTimer = 0;
+let feedbackMsg = '', feedbackTimer = 0, feedbackColor = '#0f0';
+let waveKills = 0, waveTarget = 5;
+
+for (let i = 0; i < 120; i++)
+  stars.push({ x: Math.random()*2000, y: Math.random()*1200, r: Math.random()*1.5+0.3, b: Math.random() });
+
+function initShip() {
+  ship = { x: canvas.width/2, y: canvas.height-80, w:36, h:44, speed:280, shootCool:0 };
+}
+
+function getTimer(type) {
+  if (DIFF[difficulty].untimed) return 0;
+  return DIFF[difficulty].timers[type] || 20;
+}
+
+function getAstSpeed(type) {
+  const base = 30 + waveNum * 5;
+  const typeSlow = type==='multi'?0.35 : type==='nbt'?0.38 : type==='medium'?0.55 : 1.0;
+  return base * typeSlow * DIFF[difficulty].astroidSpeedMult;
+}
+
+function pickQuestion() {
+  if (usedQIndices.length >= QUESTION_BANK.length) usedQIndices = [];
+  let avail = QUESTION_BANK.map((_,i)=>i).filter(i=>!usedQIndices.includes(i));
+  // Wave-based pool
+  let pool = avail;
+  if (waveNum <= 3) pool = avail.filter(i=>['3.OA.C.7','3.OA.A.2','3.NBT.1','3.NBT.2'].includes(QUESTION_BANK[i].std));
+  else if (waveNum <= 5) pool = avail.filter(i=>!['3.MD.C.7','3.MD.D.8'].includes(QUESTION_BANK[i].std));
+  if (!pool.length) pool = avail;
+  if (!pool.length) { usedQIndices=[]; pool=QUESTION_BANK.map((_,i)=>i); }
+  const idx = pool[Math.floor(Math.random()*pool.length)];
+  usedQIndices.push(idx);
+  currentQ = { ...QUESTION_BANK[idx] };
+  const t = getTimer(currentQ.type);
+  qMaxTime = t; qTimer = t;
+  let answers = [{val:currentQ.a,correct:true}, ...currentQ.wrong.map(w=>({val:w,correct:false}))];
+  spawnAsteroidsForQuestion(shuffle(answers));
+}
+
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+
+function spawnAsteroidsForQuestion(answers) {
+  asteroids = [];
+  const margin=80, spacing=(canvas.width-margin*2)/(answers.length-1);
+  answers.forEach((ans,i) => {
+    asteroids.push({
+      x: margin+i*spacing, y: -60-Math.random()*80,
+      r: 38+Math.random()*12, val: ans.val, correct: ans.correct,
+      speed: getAstSpeed(currentQ.type),
+      rot: Math.random()*Math.PI*2, rotSpeed:(Math.random()-0.5)*0.8,
+      driftX:(Math.random()-0.5)*18,
+      color:`hsl(${20+Math.random()*40},60%,45%)`
+    });
+  });
+}
+
+function startGame() {
+  if (!difficulty) return;
+  document.getElementById('overlay').style.display='none';
+  score=0; lives=3; waveNum=1; usedQIndices=[]; waveKills=0; waveTarget=5;
+  bullets=[]; asteroids=[];
+  initShip(); pickQuestion(); updateHUD();
+  state='playing';
+  showWaveAnnounce('WAVE 1');
+  lastTime=performance.now();
+  requestAnimationFrame(loop);
+}
+
+function showWaveAnnounce(msg) { waveMsg=msg; waveMsgTimer=2.2; }
+function showFeedback(msg,color) { feedbackMsg=msg; feedbackTimer=1.4; feedbackColor=color; }
+
+function updateHUD() {
+  document.getElementById('score').textContent=score;
+  document.getElementById('wave').textContent=waveNum;
+  document.getElementById('hi').textContent=hiScore;
+  document.getElementById('lives').textContent='❤️'.repeat(Math.max(0,lives));
+  if (currentQ) {
+    document.getElementById('standard-label').textContent=currentQ.std + (DIFF[difficulty]?.untimed ? '  ·  🌱 No Timer' : '');
+    document.getElementById('question-text').textContent=currentQ.q;
+  }
+  // Show/hide timer bar
+  document.getElementById('timer-bar-wrap').style.display = (difficulty && DIFF[difficulty].untimed) ? 'none' : 'block';
+}
+
+function loop(ts) {
+  if (state!=='playing') return;
+  const dt=Math.min((ts-lastTime)/1000,0.1);
+  lastTime=ts;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function update(dt) {
+  if (keys['ArrowLeft']||keys['a']) ship.x-=ship.speed*dt;
+  if (keys['ArrowRight']||keys['d']) ship.x+=ship.speed*dt;
+  ship.x=Math.max(ship.w/2, Math.min(canvas.width-ship.w/2, ship.x));
+  ship.shootCool-=dt;
+  if ((keys[' ']||keys['Space'])&&ship.shootCool<=0) {
+    bullets.push({x:ship.x, y:ship.y-ship.h/2, speed:520});
+    ship.shootCool=0.22;
+  }
+
+  bullets.forEach(b=>b.y-=b.speed*dt);
+  bullets=bullets.filter(b=>b.y>-20);
+
+  // Timer
+  if (currentQ && !DIFF[difficulty].untimed && qMaxTime > 0) {
+    qTimer-=dt;
+    const pct=Math.max(0,qTimer/qMaxTime);
+    const bar=document.getElementById('timer-bar');
+    bar.style.width=(pct*100)+'%';
+    bar.style.background=pct>0.5?'#4af':pct>0.25?'#fa0':'#f44';
+    if (qTimer<=0) {
+      showFeedback("⏱ Time's up! New question...", '#fa0');
+      pickQuestion(); updateHUD();
+    }
+  }
+
+  asteroids.forEach(a => {
+    a.y+=a.speed*dt; a.x+=a.driftX*dt; a.rot+=a.rotSpeed*dt;
+    if (a.x<-a.r) a.x=canvas.width+a.r;
+    if (a.x>canvas.width+a.r) a.x=-a.r;
+  });
+
+  // Bullet-asteroid collision
+  outer: for (let bi=bullets.length-1;bi>=0;bi--) {
+    for (let ai=asteroids.length-1;ai>=0;ai--) {
+      const b=bullets[bi], a=asteroids[ai];
+      if (!b||!a) continue;
+      const dx=b.x-a.x, dy=b.y-a.y;
+      if (Math.sqrt(dx*dx+dy*dy)<a.r) {
+        bullets.splice(bi,1);
+        if (a.correct) {
+          asteroids.splice(ai,1);
+          const pts=currentQ.type==='multi'?30:currentQ.type==='nbt'?25:currentQ.type==='medium'?20:10;
+          score+=pts; if(score>hiScore)hiScore=score;
+          showFeedback(`✓ +${pts}`, '#0f8');
+          waveKills++;
+          if (waveKills>=waveTarget) {
+            waveNum++; waveKills=0; waveTarget=5+waveNum;
+            showWaveAnnounce(`WAVE ${waveNum}!`);
+          }
+          pickQuestion();
+        } else {
+          asteroids.splice(ai,1);
+          lives--;
+          showFeedback('✗ Wrong answer!', '#f44');
+          updateHUD();
+          if (lives<=0) { gameOver(); return; }
+          setTimeout(()=>{
+            if (state==='playing'&&currentQ) {
+              const rw=currentQ.wrong[Math.floor(Math.random()*currentQ.wrong.length)];
+              asteroids.push({x:Math.random()*(canvas.width-160)+80,y:-60,r:38,val:rw,correct:false,
+                speed:getAstSpeed(currentQ.type),rot:0,rotSpeed:(Math.random()-0.5)*0.8,driftX:(Math.random()-0.5)*18,color:`hsl(${20+Math.random()*40},60%,45%)`});
+            }
+          },800);
+        }
+        updateHUD();
+        continue outer;
+      }
+    }
+  }
+
+  // Asteroid falls off bottom
+  for (let ai=asteroids.length-1;ai>=0;ai--) {
+    const a=asteroids[ai];
+    if (a.y-a.r>canvas.height) {
+      asteroids.splice(ai,1);
+      if (a.correct) {
+        lives--;
+        showFeedback('❗ Correct asteroid got away!','#f84');
+        updateHUD();
+        if (lives<=0){gameOver();return;}
+        setTimeout(()=>{
+          if(state==='playing'&&currentQ){
+            asteroids.push({x:Math.random()*(canvas.width-160)+80,y:-60,r:42,val:currentQ.a,correct:true,
+              speed:getAstSpeed(currentQ.type),rot:0,rotSpeed:(Math.random()-0.5)*0.6,driftX:(Math.random()-0.5)*14,color:`hsl(${20+Math.random()*40},60%,45%)`});
+          }
+        },600);
+      }
+    }
+  }
+  waveMsgTimer-=dt; feedbackTimer-=dt;
+}
+
+function draw() {
+  ctx.fillStyle='#000010'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s=>{
+    ctx.fillStyle=`rgba(255,255,255,${0.3+s.b*0.7})`;
+    ctx.beginPath(); ctx.arc(s.x%canvas.width,s.y%canvas.height,s.r,0,Math.PI*2); ctx.fill();
+  });
+  asteroids.forEach(a=>{
+    ctx.save(); ctx.translate(a.x,a.y); ctx.rotate(a.rot);
+    drawAsteroid(a.r,a.color,a.correct);
+    ctx.font=`bold ${a.r>40?15:13}px Courier New`;
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(a.val),0,0);
+    ctx.restore();
+  });
+  bullets.forEach(b=>{
+    ctx.fillStyle='#ff0'; ctx.shadowBlur=8; ctx.shadowColor='#ff0';
+    ctx.fillRect(b.x-2,b.y-10,4,12); ctx.shadowBlur=0;
+  });
+  drawShip(ship.x,ship.y);
+  if (waveMsgTimer>0){
+    ctx.save(); ctx.globalAlpha=Math.min(1,waveMsgTimer/0.5);
+    ctx.font='bold 40px Courier New'; ctx.fillStyle='#ff0';
+    ctx.shadowBlur=20; ctx.shadowColor='#f80'; ctx.textAlign='center';
+    ctx.fillText(waveMsg,canvas.width/2,canvas.height/2); ctx.restore();
+  }
+  if (feedbackTimer>0){
+    ctx.save(); ctx.globalAlpha=Math.min(1,feedbackTimer/0.3);
+    ctx.font='bold 26px Courier New'; ctx.fillStyle=feedbackColor;
+    ctx.shadowBlur=12; ctx.shadowColor=feedbackColor; ctx.textAlign='center';
+    ctx.fillText(feedbackMsg,canvas.width/2,canvas.height*0.47); ctx.restore();
+  }
+}
+
+function drawAsteroid(r,color,isCorrect){
+  ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const angle=(i/10)*Math.PI*2;
+    const jitter=r*(0.78+Math.sin(i*7.3)*0.18);
+    const x=Math.cos(angle)*jitter, y=Math.sin(angle)*jitter;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+  ctx.strokeStyle=isCorrect?'rgba(100,200,255,0.3)':'#555'; ctx.lineWidth=2; ctx.stroke();
+}
+
+function drawShip(x,y){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath(); ctx.arc(0,22,10,0,Math.PI*2); ctx.fillStyle='rgba(0,120,255,0.35)'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(18,18); ctx.lineTo(0,10); ctx.lineTo(-18,18); ctx.closePath();
+  ctx.fillStyle='#4af'; ctx.fill(); ctx.strokeStyle='#8ef'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI*2); ctx.fillStyle='#cef'; ctx.fill();
+  ctx.restore();
+}
+
+function gameOver(){
+  state='gameover';
+  if(score>hiScore)hiScore=score;
+  const ov=document.getElementById('overlay');
+  ov.innerHTML=`
+    <h1>🚀 GAME OVER</h1>
+    <p style="font-size:22px;color:#ff0;">Score: <b>${score}</b> &nbsp;|&nbsp; High Score: <b>${hiScore}</b></p>
+    <p>You reached <b>Wave ${waveNum}</b> on <b>${DIFF[difficulty].label}</b>!</p>
+    <p style="color:#adf;margin-top:8px;">Great effort! Understanding always beats rushing. 🧠⭐</p>
+    <div style="display:flex;gap:14px;margin-top:18px;justify-content:center;flex-wrap:wrap">
+      <button onclick="restartSameDiff()" style="padding:12px 28px;background:#4af;color:#000;font-size:16px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;font-family:inherit;">Play Again (same)</button>
+      <button onclick="backToMenu()" style="padding:12px 28px;background:#333;color:#fff;font-size:16px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;font-family:inherit;">Change Difficulty</button>
+    </div>`;
+  ov.style.display='flex';
+}
+
+function restartSameDiff(){
+  document.getElementById('overlay').style.display='none';
+  score=0;lives=3;waveNum=1;usedQIndices=[];waveKills=0;waveTarget=5;
+  bullets=[];asteroids=[];
+  initShip();pickQuestion();updateHUD();
+  state='playing';showWaveAnnounce('WAVE 1');
+  lastTime=performance.now();requestAnimationFrame(loop);
+}
+
+function backToMenu(){
+  state='menu';
+  const ov=document.getElementById('overlay');
+  ov.innerHTML=`
+    <h1>🚀 Math Asteroid Blaster</h1>
+    <p><b>Bridges 3rd Grade Edition</b> — Read each question, then shoot the asteroid with the correct answer!</p>
+    <p>Move: <b>← → Arrow Keys</b> &nbsp;|&nbsp; Shoot: <b>Spacebar</b> &nbsp;|&nbsp; Mobile: drag &amp; tap</p>
+    <p style="margin-top:6px;">Choose your difficulty:</p>
+    <div class="diff-grid">
+      <div class="diff-card" id="card-easy" onclick="selectDiff('easy')">
+        <h3>🌱 Explorer</h3><p>No timer — take all the time you need. Focus on understanding.</p>
+        <span class="badge easy-b">Untimed</span>
+      </div>
+      <div class="diff-card" id="card-medium" onclick="selectDiff('medium')">
+        <h3>⭐ Challenger</h3><p>Generous timers. Facts are quick; word problems get extra time.</p>
+        <span class="badge med-b">Relaxed Timer</span>
+      </div>
+      <div class="diff-card" id="card-hard" onclick="selectDiff('hard')">
+        <h3>🚀 Ace Pilot</h3><p>Tighter timers and faster asteroids. For confident math students!</p>
+        <span class="badge hard-b">Timed</span>
+      </div>
+    </div>
+    <div class="standards">Standards: 3.OA.A.1 · 3.OA.A.2 · 3.OA.C.7 · 3.OA.D.8 · 3.NBT.1 · 3.NBT.2 · 3.NF.A.1 · 3.NF.A.3 · 3.MD.C.7 · 3.MD.D.8</div>
+    <button id="start-btn" onclick="startGame()">START GAME</button>`;
+  ov.style.display='flex';
+  if (difficulty) {
+    document.getElementById('card-'+difficulty)?.classList.add('selected');
+    document.getElementById('start-btn')?.classList.add('ready');
+  }
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' ')e.preventDefault();});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+let touchStartX=null;
+canvas.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;});
+canvas.addEventListener('touchmove',e=>{
+  if(touchStartX!==null&&ship){const dx=e.touches[0].clientX-touchStartX;
+    ship.x=Math.max(ship.w/2,Math.min(canvas.width-ship.w/2,ship.x+dx));
+    touchStartX=e.touches[0].clientX;}
+  e.preventDefault();},{passive:false});
+canvas.addEventListener('touchend',()=>{if(ship)bullets.push({x:ship.x,y:ship.y-ship.h/2,speed:520});});
+</script>
+</body>
+</html>
