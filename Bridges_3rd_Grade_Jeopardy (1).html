@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridges Math Jeopardy — 3rd Grade</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0A1628;
+  --navy2:   #0F2040;
+  --blue:    #1A3A6E;
+  --gold:    #F5B700;
+  --goldlt:  #FFD84D;
+  --golddim: #C49200;
+  --silver:  #C8D6E5;
+  --white:   #FFFFFF;
+  --correct: #2ECC71;
+  --wrong:   #E74C3C;
+  --glow:    rgba(245,183,0,0.35);
+
+  --cat1: #1565C0; /* Add & Subtract */
+  --cat2: #2E7D32; /* Multiply & Divide */
+  --cat3: #6A1B9A; /* Fractions */
+  --cat4: #E65100; /* Measurement & Time */
+  --cat5: #00695C; /* Area & Geometry */
+  --cat6: #AD1457; /* Word Problems */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARFIELD ── */
+.stars {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(26,58,110,0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(10,22,40,0.8) 0%, transparent 50%);
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle linear infinite;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: 0.2; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.3); }
+}
+
+/* ── HEADER ── */
+.site-header {
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 20px 16px 12px;
+  background: linear-gradient(180deg, rgba(10,22,40,0.95) 0%, rgba(15,32,64,0.8) 100%);
+  border-bottom: 2px solid var(--golddim);
+}
+
+.header-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(28px, 6vw, 52px);
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-shadow: 0 0 30px var(--glow), 0 4px 12px rgba(0,0,0,0.5);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.header-sub {
+  font-size: clamp(11px, 2vw, 14px);
+  color: var(--silver);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* ── MODE BAR ── */
+.mode-bar {
+  position: relative; z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(10,22,40,0.7);
+  border-bottom: 1px solid rgba(245,183,0,0.15);
+  flex-wrap: wrap;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--golddim);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-btn {
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  background: transparent;
+  color: var(--silver);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.mode-btn.active { background: var(--gold); color: var(--navy); }
+
+.reset-btn {
+  padding: 6px 16px;
+  background: rgba(231,76,60,0.2);
+  border: 1px solid rgba(231,76,60,0.4);
+  color: #EF9A9A;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover { background: rgba(231,76,60,0.4); }
+
+/* ── SCORES ── */
+.scores-wrap {
+  position: relative; z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(10,22,40,0.5);
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.team-score {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px 14px;
+  text-align: center;
+  min-width: 90px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.team-score:hover { border-color: rgba(245,183,0,0.4); }
+.team-score.active-team { border-color: var(--gold); box-shadow: 0 0 12px var(--glow); }
+
+.team-name {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--silver);
+  margin-bottom: 2px;
+}
+
+.team-pts {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 26px;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.team-edit {
+  position: absolute;
+  top: 3px; right: 5px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+}
+
+.add-team-btn {
+  flex-shrink: 0;
+  background: rgba(245,183,0,0.08);
+  border: 1px dashed rgba(245,183,0,0.3);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: var(--golddim);
+  font-size: 20px;
+  cursor: pointer;
+  min-width: 50px;
+  transition: all 0.2s;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-team-btn:hover { background: rgba(245,183,0,0.15); color: var(--gold); }
+
+/* ── BOARD ── */
+.board-wrap {
+  position: relative; z-index: 10;
+  padding: 12px 10px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+/* Category headers */
+.cat-header {
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(13px, 1.8vw, 18px);
+  letter-spacing: 1px;
+  line-height: 1.2;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-header.c1 { background: var(--cat1); }
+.cat-header.c2 { background: var(--cat2); }
+.cat-header.c3 { background: var(--cat3); }
+.cat-header.c4 { background: var(--cat4); }
+.cat-header.c5 { background: var(--cat5); }
+.cat-header.c6 { background: var(--cat6); }
+
+/* Question cells */
+.q-cell {
+  background: var(--blue);
+  border: 2px solid rgba(245,183,0,0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  min-height: clamp(52px, 8vw, 80px);
+  position: relative;
+  overflow: hidden;
+}
+
+.q-cell::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(245,183,0,0.08), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.q-cell:hover:not(.used) { border-color: var(--gold); transform: scale(1.03); box-shadow: 0 0 20px var(--glow); }
+.q-cell:hover:not(.used)::before { opacity: 1; }
+
+.q-cell.used {
+  background: rgba(255,255,255,0.03);
+  border-color: transparent;
+  cursor: default;
+  transform: none !important;
+}
+
+.q-value {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(18px, 3.5vw, 36px);
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.q-cell.used .q-value { opacity: 0; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,10,20,0.92);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(6px);
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: linear-gradient(160deg, var(--navy2) 0%, var(--blue) 100%);
+  border: 2px solid var(--golddim);
+  border-radius: 24px;
+  padding: 36px 32px 28px;
+  max-width: 680px;
+  width: 100%;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(245,183,0,0.1);
+  position: relative;
+  animation: modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.88) translateY(24px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-cat {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.modal-points {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 48px;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 16px;
+  text-shadow: 0 0 24px var(--glow);
+}
+
+.modal-question {
+  font-size: clamp(17px, 3vw, 24px);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--white);
+  margin-bottom: 24px;
+  min-height: 60px;
+}
+
+/* Answer reveal */
+.answer-box {
+  background: rgba(46,204,113,0.12);
+  border: 2px solid rgba(46,204,113,0.35);
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  display: none;
+  animation: answerIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes answerIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.answer-box.show { display: block; }
+
+.answer-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--correct);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.answer-text {
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 700;
+  color: white;
+  line-height: 1.4;
+}
+
+/* Countdown ring */
+.countdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.countdown-ring {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gold) 0%, rgba(255,255,255,0.1) 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.countdown-inner {
+  width: 38px; height: 38px;
+  background: var(--navy2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 20px;
+  color: var(--gold);
+}
+
+.countdown-label {
+  font-size: 13px;
+  color: var(--silver);
+  font-weight: 600;
+}
+
+/* Modal buttons */
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reveal-btn {
+  background: linear-gradient(135deg, var(--gold), var(--golddim));
+  color: var(--navy);
+  border: none;
+  border-radius: 50px;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 18px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--glow);
+  transition: all 0.2s;
+}
+
+.reveal-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--glow); }
+.reveal-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.score-btn {
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: none;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 16px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: none;
+}
+
+.score-btn.show { display: block; }
+.score-btn.correct-btn { background: var(--correct); color: white; }
+.score-btn.wrong-btn   { background: var(--wrong); color: white; }
+.score-btn:hover { transform: scale(1.04); }
+
+.close-btn {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  color: rgba(255,255,255,0.5);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+/* CCSS badge */
+.ccss-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  color: var(--silver);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+/* Team selector in modal */
+.team-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.team-sel-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--silver);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.15s;
+}
+
+.team-sel-btn:hover    { border-color: var(--gold); color: var(--gold); }
+.team-sel-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy2);
+  border: 1px solid var(--golddim);
+  color: var(--gold);
+  border-radius: 50px;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 20px;
+  letter-spacing: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 200;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .board { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+  .cat-header { font-size: 10px; min-height: 44px; padding: 6px 2px; }
+  .q-cell { min-height: 42px; }
+  .q-value { font-size: 16px; }
+  .modal { padding: 24px 18px 20px; }
+  .modal-points { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- HEADER -->
+<div class="site-header">
+  <div class="header-title">Bridges Math Jeopardy</div>
+  <div class="header-sub">3rd Grade · Totem Falls Elementary · Mr. Wenzel's Class</div>
+</div>
+
+<!-- MODE BAR -->
+<div class="mode-bar">
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeClass" onclick="setMode('class')">📺 Class Mode</button>
+    <button class="mode-btn"        id="modeGroup" onclick="setMode('group')">👥 Group Mode</button>
+  </div>
+  <button class="reset-btn" onclick="resetBoard()">↺ Reset Board</button>
+</div>
+
+<!-- SCORES -->
+<div class="scores-wrap" id="scoresWrap">
+  <!-- Teams rendered by JS -->
+  <button class="add-team-btn" onclick="addTeam()" title="Add team">+</button>
+</div>
+
+<!-- BOARD -->
+<div class="board-wrap">
+  <div class="board" id="board"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal()">✕</button>
+    <div class="modal-cat" id="modalCat"></div>
+    <div class="ccss-badge" id="modalCCSS"></div>
+    <div class="modal-points" id="modalPoints"></div>
+    <div class="modal-question" id="modalQuestion"></div>
+
+    <div class="countdown-wrap" id="countdownWrap">
+      <div class="countdown-ring" id="countdownRing">
+        <div class="countdown-inner" id="countdownNum">20</div>
+      </div>
+      <div class="countdown-label">seconds to answer — then reveal</div>
+    </div>
+
+    <div class="answer-box" id="answerBox">
+      <div class="answer-label">✓ Answer</div>
+      <div class="answer-text" id="answerText"></div>
+    </div>
+
+    <div style="font-size:12px;color:var(--silver);margin-bottom:10px;display:none" id="teamSelectorLabel">Award points to:</div>
+    <div class="team-selector" id="teamSelector"></div>
+
+    <div class="modal-btns">
+      <button class="reveal-btn" id="revealBtn" onclick="revealAnswer()" disabled>👁 Reveal Answer</button>
+      <button class="score-btn correct-btn" id="correctBtn" onclick="awardPoints(true)">✓ Correct</button>
+      <button class="score-btn wrong-btn"   id="wrongBtn"   onclick="awardPoints(false)">✗ Wrong</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// QUESTION DATA — Bridges 3rd Grade, 6 categories × 5 values
+// All questions use Bridges-style language and CCSS-aligned content
+// ══════════════════════════════════════════════════════════════════════════════
+const CATEGORIES = [
+  {
+    name: "Add &\nSubtract",
+    short: "Addition & Subtraction",
+    color: "c1",
+    accent: "#1565C0",
+    questions: [
+      {
+        v: 100, ccss: "3.NBT.A.2",
+        q: "What is 47 + 38?",
+        a: "85"
+      },
+      {
+        v: 200, ccss: "3.NBT.A.2",
+        q: "On an open number line, Sam starts at 65 and jumps back 28. Where does he land?",
+        a: "37  (65 − 28 = 37)"
+      },
+      {
+        v: 300, ccss: "3.NBT.A.2",
+        q: "The school store had 324 pencils. Students bought 167. How many are left? Show your thinking.",
+        a: "157 pencils  (324 − 167 = 157)"
+      },
+      {
+        v: 400, ccss: "3.NBT.A.1",
+        q: "Round 473 to the nearest hundred. Then round it to the nearest ten.",
+        a: "Nearest hundred: 500  |  Nearest ten: 470"
+      },
+      {
+        v: 500, ccss: "3.NBT.A.2",
+        q: "A baker made 256 muffins on Monday and 189 on Tuesday. She sold 315 total. How many are left?",
+        a: "130 muffins  (256 + 189 = 445 − 315 = 130)"
+      }
+    ]
+  },
+  {
+    name: "Multiply\n& Divide",
+    short: "Multiplication & Division",
+    color: "c2",
+    accent: "#2E7D32",
+    questions: [
+      {
+        v: 100, ccss: "3.OA.A.1",
+        q: "Draw an array that shows 3 × 4. How many total?",
+        a: "3 rows of 4 dots = 12 total  (3 × 4 = 12)"
+      },
+      {
+        v: 200, ccss: "3.OA.A.2",
+        q: "There are 24 students split equally into 6 groups. How many students in each group? Write a division equation.",
+        a: "24 ÷ 6 = 4  (4 students per group)"
+      },
+      {
+        v: 300, ccss: "3.OA.B.5",
+        q: "Use the distributive property: 7 × 8 = 7 × (5 + 3). What is 7 × 5 and 7 × 3? Add them together.",
+        a: "7×5 = 35  |  7×3 = 21  |  35 + 21 = 56"
+      },
+      {
+        v: 400, ccss: "3.OA.A.4",
+        q: "What number goes in the box? □ × 9 = 63",
+        a: "7  (7 × 9 = 63)"
+      },
+      {
+        v: 500, ccss: "3.OA.D.8",
+        q: "Mr. Wenzel puts 48 books on shelves. Each shelf holds 8 books. How many shelves does he need? Write the equation and explain how you know.",
+        a: "48 ÷ 8 = 6 shelves"
+      }
+    ]
+  },
+  {
+    name: "Fractions",
+    short: "Fractions",
+    color: "c3",
+    accent: "#6A1B9A",
+    questions: [
+      {
+        v: 100, ccss: "3.NF.A.1",
+        q: "A pizza is cut into 4 equal slices. You eat 1 slice. What fraction did you eat?",
+        a: "1/4 (one-fourth)"
+      },
+      {
+        v: 200, ccss: "3.NF.A.2",
+        q: "On a number line from 0 to 1 divided into 3 equal parts, where would you place 2/3?",
+        a: "At the second tick mark — 2 of 3 equal parts from 0"
+      },
+      {
+        v: 300, ccss: "3.NF.A.3",
+        q: "Are 1/2 and 2/4 equivalent? Explain using a model or words.",
+        a: "Yes — both represent the same amount. 1/2 of a shape equals 2/4 of the same shape."
+      },
+      {
+        v: 400, ccss: "3.NF.A.3",
+        q: "Which is greater: 3/4 or 3/8? How do you know?",
+        a: "3/4 is greater. Same numerator, but fourths are bigger pieces than eighths."
+      },
+      {
+        v: 500, ccss: "3.NF.A.1",
+        q: "A rectangle is divided into 6 equal parts. 4 parts are shaded. Write the fraction that is shaded and the fraction that is NOT shaded.",
+        a: "Shaded: 4/6  |  Not shaded: 2/6  |  (They must add to 6/6 = 1 whole)"
+      }
+    ]
+  },
+  {
+    name: "Measure\n& Time",
+    short: "Measurement & Time",
+    color: "c4",
+    accent: "#E65100",
+    questions: [
+      {
+        v: 100, ccss: "3.MD.A.1",
+        q: "The clock shows 7:35. What time will it be in 20 minutes?",
+        a: "7:55"
+      },
+      {
+        v: 200, ccss: "3.MD.A.1",
+        q: "School starts at 8:15. Lunch is 2 hours and 30 minutes later. What time is lunch?",
+        a: "10:45"
+      },
+      {
+        v: 300, ccss: "3.MD.A.2",
+        q: "A bucket holds 1 liter of water. You fill it 4 times. How many milliliters of water is that total? (1 liter = 1,000 mL)",
+        a: "4,000 milliliters"
+      },
+      {
+        v: 400, ccss: "3.MD.B.4",
+        q: "A crayon is between 8 and 9 centimeters long. The end lines up closest to the 8½ mark. How long is the crayon to the nearest half centimeter?",
+        a: "8½ centimeters (8.5 cm)"
+      },
+      {
+        v: 500, ccss: "3.MD.A.1",
+        q: "The movie starts at 1:20 PM and ends at 3:05 PM. How long is the movie? Show your thinking on a number line.",
+        a: "1 hour and 45 minutes  (1:20 → 2:20 = 1 hr, 2:20 → 3:05 = 45 min)"
+      }
+    ]
+  },
+  {
+    name: "Area &\nGeometry",
+    short: "Area & Geometry",
+    color: "c5",
+    accent: "#00695C",
+    questions: [
+      {
+        v: 100, ccss: "3.MD.C.5",
+        q: "What is area? How do we measure it?",
+        a: "Area is the amount of flat space inside a shape. We measure it in square units."
+      },
+      {
+        v: 200, ccss: "3.MD.C.6",
+        q: "A rectangle is 5 units long and 3 units wide. What is its area? How did you find it?",
+        a: "15 square units  (5 × 3 = 15)"
+      },
+      {
+        v: 300, ccss: "3.G.A.1",
+        q: "Name two things that are the same about a square and a rectangle. Name one thing that is different.",
+        a: "Same: both have 4 right angles, both have 4 sides  |  Different: a square has all 4 sides equal; a rectangle's opposite sides are equal"
+      },
+      {
+        v: 400, ccss: "3.MD.C.7",
+        q: "A garden is 8 meters long. Its area is 40 square meters. How wide is the garden?",
+        a: "5 meters  (40 ÷ 8 = 5)"
+      },
+      {
+        v: 500, ccss: "3.MD.D.8",
+        q: "A room is shaped like an L. One part is 4×6 ft and the other part is 2×3 ft. What is the total area?",
+        a: "30 square feet  (4×6 = 24 and 2×3 = 6, then 24 + 6 = 30)"
+      }
+    ]
+  },
+  {
+    name: "Word\nProblems",
+    short: "Word Problems",
+    color: "c6",
+    accent: "#AD1457",
+    questions: [
+      {
+        v: 100, ccss: "3.OA.D.8",
+        q: "There are 5 bags of apples. Each bag has 6 apples. How many apples in all?",
+        a: "30 apples  (5 × 6 = 30)"
+      },
+      {
+        v: 200, ccss: "3.OA.D.8",
+        q: "Maya has 36 stickers to share equally among 4 friends. How many does each friend get? Are there leftovers?",
+        a: "9 stickers each  (36 ÷ 4 = 9, no leftovers)"
+      },
+      {
+        v: 300, ccss: "3.MD.A.2",
+        q: "A fish tank holds 8 liters. You add 3 more liters. How many milliliters are in the tank now? (1 liter = 1,000 mL)",
+        a: "11,000 mL  (8 + 3 = 11 liters × 1,000 = 11,000)"
+      },
+      {
+        v: 400, ccss: "3.OA.D.8",
+        q: "The Snohomish River has 4 groups of salmon swimming upstream. Each group has 9 salmon. 7 more join them. How many salmon total?",
+        a: "43 salmon  (4 × 9 = 36 + 7 = 43)"
+      },
+      {
+        v: 500, ccss: "3.OA.D.8",
+        q: "Mr. Wenzel needs 72 folders for his class projects. Folders come in packs of 8. How many packs should he buy? How much does it cost at $3 per pack?",
+        a: "9 packs  (72 ÷ 8 = 9)  |  $27 total  (9 × $3 = $27)"
+      }
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let gameMode = 'class';
+let teams = [
+  { name: "Team 1", pts: 0 },
+  { name: "Team 2", pts: 0 },
+];
+let selectedTeamIdx = 0;
+let usedCells = new Set();
+let currentCell = null;
+let countdownTimer = null;
+let countdownSecs = 0;
+let revealDone = false;
+
+// ── RENDER STARS ──────────────────────────────────────────────────────────────
+function renderStars() {
+  const wrap = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;
+    wrap.appendChild(s);
+  }
+}
+
+// ── RENDER BOARD ──────────────────────────────────────────────────────────────
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  // Category headers
+  CATEGORIES.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = `cat-header ${cat.color}`;
+    h.textContent = cat.name;
+    board.appendChild(h);
+  });
+
+  // Question rows (5 rows, 6 cols)
+  const values = [100, 200, 300, 400, 500];
+  values.forEach(val => {
+    CATEGORIES.forEach((cat, ci) => {
+      const key = `${ci}-${val}`;
+      const cell = document.createElement('div');
+      cell.className = 'q-cell' + (usedCells.has(key) ? ' used' : '');
+      cell.innerHTML = `<span class="q-value">$${val}</span>`;
+      if (!usedCells.has(key)) {
+        cell.onclick = () => openQuestion(ci, val);
+      }
+      board.appendChild(cell);
+    });
+  });
+}
+
+// ── RENDER SCORES ─────────────────────────────────────────────────────────────
+function renderScores() {
+  const wrap = document.getElementById('scoresWrap');
+  const addBtn = wrap.querySelector('.add-team-btn');
+  wrap.querySelectorAll('.team-score').forEach(el => el.remove());
+
+  teams.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'team-score' + (i === selectedTeamIdx ? ' active-team' : '');
+    div.innerHTML = `
+      <span class="team-edit">✎</span>
+      <div class="team-name">${t.name}</div>
+      <div class="team-pts">${t.pts}</div>
+    `;
+    div.onclick = () => { selectedTeamIdx = i; renderScores(); };
+    div.querySelector('.team-edit').onclick = (e) => { e.stopPropagation(); renameTeam(i); };
+    wrap.insertBefore(div, addBtn);
+  });
+}
+
+// ── TEAM MANAGEMENT ───────────────────────────────────────────────────────────
+function addTeam() {
+  if (teams.length >= 8) return;
+  teams.push({ name: `Team ${teams.length + 1}`, pts: 0 });
+  renderScores();
+}
+
+function renameTeam(i) {
+  const name = prompt('Team name:', teams[i].name);
+  if (name && name.trim()) { teams[i].name = name.trim(); renderScores(); }
+}
+
+// ── OPEN QUESTION ─────────────────────────────────────────────────────────────
+function openQuestion(catIdx, val) {
+  const cat = CATEGORIES[catIdx];
+  const q = cat.questions.find(q => q.v === val);
+  if (!q) return;
+
+  currentCell = { catIdx, val };
+  revealDone = false;
+
+  document.getElementById('modalCat').textContent = cat.short;
+  document.getElementById('modalCat').style.color = cat.accent;
+  document.getElementById('modalCCSS').textContent = `CCSS ${q.ccss}`;
+  document.getElementById('modalPoints').textContent = `$${val}`;
+  document.getElementById('modalQuestion').textContent = q.q;
+  document.getElementById('answerText').textContent = q.a;
+  document.getElementById('answerBox').classList.remove('show');
+  document.getElementById('revealBtn').disabled = true;
+  document.getElementById('correctBtn').classList.remove('show');
+  document.getElementById('wrongBtn').classList.remove('show');
+
+  // Team selector
+  buildTeamSelector();
+
+  document.getElementById('modalOverlay').classList.add('show');
+  startCountdown(val);
+}
+
+function buildTeamSelector() {
+  const sel = document.getElementById('teamSelector');
+  const lbl = document.getElementById('teamSelectorLabel');
+  sel.innerHTML = '';
+
+  if (gameMode === 'class') {
+    lbl.style.display = 'block';
+    teams.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'team-sel-btn' + (i === selectedTeamIdx ? ' selected' : '');
+      btn.textContent = t.name;
+      btn.onclick = () => {
+        selectedTeamIdx = i;
+        sel.querySelectorAll('.team-sel-btn').forEach((b,j) => b.classList.toggle('selected', j===i));
+      };
+      sel.appendChild(btn);
+    });
+  } else {
+    lbl.style.display = 'none';
+  }
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────────────────────────────
+function startCountdown(val) {
+  clearInterval(countdownTimer);
+  // Harder questions get more time
+  countdownSecs = val >= 400 ? 25 : val >= 200 ? 20 : 15;
+  updateCountdownRing(countdownSecs, countdownSecs);
+  document.getElementById('countdownNum').textContent = countdownSecs;
+  document.getElementById('countdownWrap').style.display = 'flex';
+
+  countdownTimer = setInterval(() => {
+    countdownSecs--;
+    updateCountdownRing(countdownSecs, val >= 400 ? 25 : val >= 200 ? 20 : 15);
+    document.getElementById('countdownNum').textContent = Math.max(0, countdownSecs);
+    if (countdownSecs <= 0) {
+      clearInterval(countdownTimer);
+      document.getElementById('revealBtn').disabled = false;
+      document.getElementById('countdownWrap').style.display = 'none';
+    }
+  }, 1000);
+}
+
+function updateCountdownRing(remaining, total) {
+  const pct = Math.max(0, remaining / total) * 100;
+  const color = pct > 50 ? '#F5B700' : pct > 25 ? '#FF8C00' : '#E74C3C';
+  document.getElementById('countdownRing').style.background =
+    `conic-gradient(${color} ${pct}%, rgba(255,255,255,0.08) ${pct}%)`;
+}
+
+// ── REVEAL ANSWER ─────────────────────────────────────────────────────────────
+function revealAnswer() {
+  clearInterval(countdownTimer);
+  revealDone = true;
+  document.getElementById('answerBox').classList.add('show');
+  document.getElementById('revealBtn').disabled = true;
+  document.getElementById('countdownWrap').style.display = 'none';
+
+  document.getElementById('correctBtn').classList.add('show');
+  document.getElementById('wrongBtn').classList.add('show');
+}
+
+// ── AWARD POINTS ──────────────────────────────────────────────────────────────
+function awardPoints(correct) {
+  const val = currentCell?.val || 0;
+  if (correct) {
+    teams[selectedTeamIdx].pts += val;
+    showToast(`${teams[selectedTeamIdx].name} +$${val}!`);
+  } else {
+    showToast('No points awarded');
+  }
+  markUsed();
+  closeModal();
+  renderScores();
+}
+
+function markUsed() {
+  if (!currentCell) return;
+  usedCells.add(`${currentCell.catIdx}-${currentCell.val}`);
+  renderBoard();
+}
+
+// ── CLOSE MODAL ───────────────────────────────────────────────────────────────
+function closeModal() {
+  clearInterval(countdownTimer);
+  document.getElementById('modalOverlay').classList.remove('show');
+  if (currentCell && !usedCells.has(`${currentCell.catIdx}-${currentCell.val}`)) {
+    markUsed();
+  }
+}
+
+// ── MODE ───────────────────────────────────────────────────────────────────────
+function setMode(m) {
+  gameMode = m;
+  document.getElementById('modeClass').classList.toggle('active', m === 'class');
+  document.getElementById('modeGroup').classList.toggle('active', m === 'group');
+  showToast(m === 'class' ? '📺 Class Mode — teams on scoreboard' : '👥 Group Mode — no team tracking');
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetBoard() {
+  if (!confirm('Reset the board? All progress will be cleared.')) return;
+  usedCells.clear();
+  teams.forEach(t => t.pts = 0);
+  renderBoard();
+  renderScores();
+  showToast('Board reset!');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderStars();
+renderBoard();
+renderScores();
+</script>
+</body>
+</html>
